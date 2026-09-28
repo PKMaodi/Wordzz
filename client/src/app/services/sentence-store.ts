@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -16,12 +17,14 @@ export class SentenceStore {
   private readonly loadError = signal<ApiErrorDetails | null>(null);
   private readonly moreLoading = signal(false);
   private readonly endReached = signal(false);
+  private readonly lastSaved = signal<string | null>(null);
 
   readonly sentences = this.sentenceList.asReadonly();
   readonly total = this.totalCount.asReadonly();
   readonly status = this.loadStatus.asReadonly();
   readonly error = this.loadError.asReadonly();
   readonly loadingMore = this.moreLoading.asReadonly();
+  readonly lastSavedId = this.lastSaved.asReadonly();
   readonly hasMore = computed(
     () => !this.endReached() && this.sentenceList().length < this.totalCount()
   );
@@ -63,6 +66,67 @@ export class SentenceStore {
       }
     } finally {
       this.moreLoading.set(false);
+    }
+  }
+
+  async get(id: string): Promise<Sentence> {
+    try {
+      const sentence = await firstValueFrom(this.api.getSentence(id));
+      this.replace(sentence);
+      return sentence;
+    } catch (error) {
+      this.dropIfGone(id, error);
+      throw error;
+    }
+  }
+
+  async create(wordIds: string[]): Promise<Sentence> {
+    const sentence = await firstValueFrom(this.api.createSentence(wordIds));
+    this.sentenceList.update((sentences) => [sentence, ...sentences]);
+    this.totalCount.update((total) => total + 1);
+    this.lastSaved.set(sentence.id);
+    return sentence;
+  }
+
+  async update(id: string, wordIds: string[]): Promise<Sentence> {
+    try {
+      const sentence = await firstValueFrom(this.api.updateSentence(id, wordIds));
+      this.replace(sentence);
+      this.lastSaved.set(sentence.id);
+      return sentence;
+    } catch (error) {
+      this.dropIfGone(id, error);
+      throw error;
+    }
+  }
+
+  async remove(id: string): Promise<void> {
+    try {
+      await firstValueFrom(this.api.deleteSentence(id));
+      this.drop(id);
+    } catch (error) {
+      this.dropIfGone(id, error);
+      throw error;
+    }
+  }
+
+  private replace(sentence: Sentence): void {
+    this.sentenceList.update((sentences) =>
+      sentences.map((existing) => (existing.id === sentence.id ? sentence : existing))
+    );
+  }
+
+  private drop(id: string): void {
+    if (!this.sentenceList().some((sentence) => sentence.id === id)) {
+      return;
+    }
+    this.sentenceList.update((sentences) => sentences.filter((sentence) => sentence.id !== id));
+    this.totalCount.update((total) => Math.max(total - 1, 0));
+  }
+
+  private dropIfGone(id: string, error: unknown): void {
+    if (error instanceof HttpErrorResponse && error.status === 404) {
+      this.drop(id);
     }
   }
 }
