@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const { pool } = require('./config/database');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
+const wordRoutes = require('./routes/wordRoutes');
+const sentenceRoutes = require('./routes/sentenceRoutes');
 
 const app = express();
 
@@ -21,6 +23,9 @@ app.get('/api/health', async (req, res) => {
     });
   }
 });
+
+app.use('/api/words', wordRoutes);
+app.use('/api/sentences', sentenceRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
