@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 
-import { SENTENCE_MAX_WORDS } from '../models/sentence';
+import { SENTENCE_MAX_WORDS, Sentence } from '../models/sentence';
 import { Word } from '../models/word';
 import { ApiErrorDetails, describeApiError } from './api';
 import { SentenceStore } from './sentence-store';
@@ -17,15 +17,20 @@ export class SentenceDraft {
   private readonly history = signal<Word[][]>([]);
   private readonly selection = signal<number | null>(null);
   private readonly addMode = signal<DraftMode>('end');
+  private readonly editedSentence = signal<Sentence | null>(null);
+  private readonly openingSentence = signal(false);
   private readonly savingSentence = signal(false);
   private readonly lastSaveError = signal<ApiErrorDetails | null>(null);
+  private openRequest = 0;
 
   readonly words = this.draftWords.asReadonly();
   readonly selectedIndex = this.selection.asReadonly();
   readonly mode = this.addMode.asReadonly();
+  readonly editing = this.editedSentence.asReadonly();
+  readonly opening = this.openingSentence.asReadonly();
   readonly saving = this.savingSentence.asReadonly();
   readonly saveError = this.lastSaveError.asReadonly();
-  readonly busy = computed(() => this.savingSentence());
+  readonly busy = computed(() => this.openingSentence() || this.savingSentence());
   readonly canUndo = computed(() => this.history().length > 0);
   readonly isFull = computed(() => this.draftWords().length >= SENTENCE_MAX_WORDS);
 
@@ -113,17 +118,45 @@ export class SentenceDraft {
     this.clearSelection();
   }
 
+  async open(id: string): Promise<void> {
+    if (this.savingSentence()) {
+      return;
+    }
+    this.reset();
+    const request = this.openRequest;
+    this.openingSentence.set(true);
+
+    try {
+      const sentence = await this.sentenceStore.get(id);
+      if (request === this.openRequest) {
+        this.editedSentence.set(sentence);
+        this.draftWords.set(sentence.words);
+        this.openingSentence.set(false);
+      }
+    } catch (error) {
+      if (request === this.openRequest) {
+        this.openingSentence.set(false);
+        throw error;
+      }
+    }
+  }
+
   async save(): Promise<boolean> {
     const words = this.draftWords();
     if (this.busy() || words.length === 0) {
       return false;
     }
+    const editing = this.editedSentence();
     this.savingSentence.set(true);
     this.lastSaveError.set(null);
     this.clearSelection();
 
     try {
-      await this.sentenceStore.create(wordIdsOf(words));
+      if (editing === null) {
+        await this.sentenceStore.create(wordIdsOf(words));
+      } else {
+        await this.sentenceStore.update(editing.id, wordIdsOf(words));
+      }
       this.savingSentence.set(false);
       this.reset();
       return true;
@@ -135,9 +168,12 @@ export class SentenceDraft {
   }
 
   reset(): void {
+    this.openRequest += 1;
     this.draftWords.set([]);
     this.history.set([]);
     this.clearSelection();
+    this.editedSentence.set(null);
+    this.openingSentence.set(false);
     this.lastSaveError.set(null);
   }
 
