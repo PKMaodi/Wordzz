@@ -1,0 +1,30 @@
+.nav {
+  flex-wrap: wrap;
+  gap: 12px var(--space-4);
+  max-width: 1280px;
+  padding: var(--space-4) clamp(16px, 4vw, var(--space-8));
+}
+
+.nav-brand {
+  font-size: 26px;
+  letter-spacing: -0.02em;
+}
+
+main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 56px 72px;
+  max-width: 1280px;
+  padding: 8px clamp(16px, 4vw, var(--space-8)) 72px;
+}
+
+app-sentence-builder {
+  flex: 3 1 480px;
+  min-width: 0;
+}
+
+app-saved-sentences {
+  flex: 2 1 320px;
+  min-width: 0;
+}

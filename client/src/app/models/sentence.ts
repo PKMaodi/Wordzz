@@ -15,3 +15,11 @@ export interface SentencePage {
   page: number;
   pageSize: number;
 }
+
+export function formatSentence(words: Word[]): string {
+  if (words.length === 0) {
+    return '';
+  }
+  const [first, ...rest] = words.map((word) => word.text);
+  return [first.charAt(0).toUpperCase() + first.slice(1), ...rest].join(' ') + '.';
+}

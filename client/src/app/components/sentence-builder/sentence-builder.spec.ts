@@ -1,3 +1,6 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SentenceBuilder } from './sentence-builder';
@@ -8,7 +11,8 @@ describe('SentenceBuilder', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SentenceBuilder]
+      imports: [SentenceBuilder],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting()]
     })
     .compileComponents();
 

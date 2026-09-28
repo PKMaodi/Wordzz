@@ -1,3 +1,4 @@
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AddWordDialog } from './add-word-dialog';
@@ -8,7 +9,8 @@ describe('AddWordDialog', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AddWordDialog]
+      imports: [AddWordDialog],
+      providers: [provideZonelessChangeDetection()]
     })
     .compileComponents();
 

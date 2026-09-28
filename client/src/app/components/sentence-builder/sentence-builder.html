@@ -1,0 +1,33 @@
+<section aria-labelledby="builder-title">
+  <div>
+    <h1 id="builder-title">New sentence</h1>
+    <p class="text-muted intro">Choose a word type, then tap a word to add it.</p>
+  </div>
+
+  <div class="draft">
+    <p class="sentence" [class.placeholder]="sentenceText() === ''" aria-live="polite">
+      {{ sentenceText() || 'Your sentence will appear here.' }}
+    </p>
+    <div class="tools">
+      <span class="count">{{ draft.words().length }} of {{ maxWords }} words</span>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>Word type</h2>
+    <div class="choices" role="group" aria-label="Word type">
+      @for (type of wordTypes; track type) {
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="type === wordType()"
+          [class.btn-secondary]="type !== wordType()"
+          [attr.aria-pressed]="type === wordType()"
+          (click)="wordType.set(type)"
+        >
+          {{ type }}
+        </button>
+      }
+    </div>
+  </div>
+</section>
