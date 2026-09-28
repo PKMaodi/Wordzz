@@ -21,6 +21,7 @@ export class SentenceDraft {
   private readonly openingSentence = signal(false);
   private readonly savingSentence = signal(false);
   private readonly lastSaveError = signal<ApiErrorDetails | null>(null);
+  private readonly leaveAction = signal<(() => void) | null>(null);
   private openRequest = 0;
 
   readonly words = this.draftWords.asReadonly();
@@ -33,6 +34,15 @@ export class SentenceDraft {
   readonly busy = computed(() => this.openingSentence() || this.savingSentence());
   readonly canUndo = computed(() => this.history().length > 0);
   readonly isFull = computed(() => this.draftWords().length >= SENTENCE_MAX_WORDS);
+  readonly isDirty = computed(() => {
+    const editing = this.editedSentence();
+    const words = this.draftWords();
+    if (editing === null) {
+      return words.length > 0;
+    }
+    return wordIdsOf(words).join() !== wordIdsOf(editing.words).join();
+  });
+  readonly leavePending = computed(() => this.leaveAction() !== null);
 
   addWord(word: Word): void {
     if (this.busy()) {
@@ -175,6 +185,31 @@ export class SentenceDraft {
     this.editedSentence.set(null);
     this.openingSentence.set(false);
     this.lastSaveError.set(null);
+    this.leaveAction.set(null);
+  }
+
+  guard(action: () => void): void {
+    if (this.savingSentence()) {
+      return;
+    }
+    if (this.isDirty()) {
+      this.leaveAction.set(action);
+    } else {
+      action();
+    }
+  }
+
+  confirmLeave(): void {
+    const action = this.leaveAction();
+    if (action === null) {
+      return;
+    }
+    this.reset();
+    action();
+  }
+
+  cancelLeave(): void {
+    this.leaveAction.set(null);
   }
 
   private commit(words: Word[]): void {
