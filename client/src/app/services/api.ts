@@ -15,6 +15,8 @@ export interface ApiErrorDetails {
   errors: string[];
 }
 
+export type LoadStatus = 'loading' | 'ready' | 'error';
+
 @Injectable({ providedIn: 'root' })
 export class Api {
   private readonly http = inject(HttpClient);
