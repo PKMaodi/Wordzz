@@ -43,5 +43,21 @@ async function update(word) {
   return result.rowsAffected[0] > 0 ? word : null;
 }
 
+async function deleteById(id) {
+  const result = await pool.request()
+    .input('id', sql.UniqueIdentifier, id)
+    .query(`
+      DELETE FROM dbo.Words
+      WHERE Id = @id
+        AND NOT EXISTS (SELECT 1 FROM dbo.SentenceWords WHERE WordId = @id);
 
-module.exports = { WORD_DELETE_RESULTS, findAll, findById, create, update};
+      SELECT COUNT(*) AS remaining FROM dbo.Words WHERE Id = @id;
+    `);
+
+  if (result.rowsAffected[0] > 0) {
+    return WORD_DELETE_RESULTS.Deleted;
+  }
+  return result.recordset[0].remaining > 0 ? WORD_DELETE_RESULTS.InUse : WORD_DELETE_RESULTS.NotFound;
+}
+
+module.exports = { WORD_DELETE_RESULTS, findAll, findById, create, update, deleteById };
