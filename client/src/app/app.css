@@ -28,3 +28,26 @@ app-saved-sentences {
   flex: 2 1 320px;
   min-width: 0;
 }
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 12px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--color-neutral-100);
+  box-shadow: var(--shadow-md);
+  font-size: 15px;
+  transform: translateX(-50%);
+}
+
+.toast svg {
+  flex: none;
+  color: var(--color-accent-700);
+}

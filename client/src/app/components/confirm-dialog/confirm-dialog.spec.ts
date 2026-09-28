@@ -16,6 +16,7 @@ describe('ConfirmDialog', () => {
 
     fixture = TestBed.createComponent(ConfirmDialog);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('heading', 'Delete this sentence?');
     fixture.detectChanges();
   });
 

@@ -1,5 +1,65 @@
 <section aria-labelledby="saved-title">
   <div>
     <h2 id="saved-title">Saved sentences</h2>
+    @if (store.status() === 'ready' && store.total() > 0) {
+      <p class="text-muted showing">Showing 1 to {{ shownCount() }} of {{ store.total() }}</p>
+    }
   </div>
+
+  @if (store.status() === 'loading') {
+    <div class="loading" role="status">
+      <span class="text-muted">Loading saved sentences…</span>
+      @for (width of skeletonWidths; track $index) {
+        <div class="skeleton" aria-hidden="true">
+          <div [style.width.%]="width"></div>
+          <div></div>
+        </div>
+      }
+    </div>
+  } @else if (store.status() === 'error') {
+    <p class="text-muted note">Your saved sentences will appear here once Wordzz can reach its server.</p>
+  } @else if (items().length === 0) {
+    <div class="empty">
+      <p class="lead">No saved sentences yet.</p>
+      <p class="text-muted note">Build a sentence, then press Save sentence. It will appear here.</p>
+    </div>
+  } @else {
+    <ul class="list">
+      @for (item of items(); track item.id) {
+        <li>
+          @if (item.editing) {
+            <span class="tag tag-accent">Editing now</span>
+          }
+          @if (item.fresh) {
+            <span class="tag tag-accent-2">Just saved</span>
+          }
+          <p class="text">{{ item.text }}</p>
+          <span class="times">{{ item.times }}</span>
+          <div class="actions">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [disabled]="item.editing || draft.saving()"
+              [attr.aria-label]="'Edit: ' + item.text"
+              (click)="edit(item.id)"
+            >
+              Edit
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+    @if (store.hasMore()) {
+      <button
+        type="button"
+        class="btn btn-secondary more"
+        [disabled]="store.loadingMore()"
+        (click)="showMore()"
+      >
+        {{ store.loadingMore() ? 'Loading…' : 'Show ' + moreCount() + ' more' }}
+      </button>
+    } @else if (store.sentences().length > pageSize) {
+      <span class="text-muted end">That's every saved sentence.</span>
+    }
+  }
 </section>

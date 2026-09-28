@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { Sentence } from '../models/sentence';
 import { Api, ApiErrorDetails, LoadStatus, describeApiError } from './api';
 
-const PAGE_SIZE = 20;
+export const PAGE_SIZE = 20;
 
 @Injectable({ providedIn: 'root' })
 export class SentenceStore {
@@ -64,6 +64,9 @@ export class SentenceStore {
         this.endReached.set(reply.items.length < PAGE_SIZE);
         page += 1;
       }
+      if (this.endReached() && this.sentenceList().length < this.totalCount()) {
+        await this.addNewer();
+      }
     } finally {
       this.moreLoading.set(false);
     }
@@ -108,6 +111,21 @@ export class SentenceStore {
       this.dropIfGone(id, error);
       throw error;
     }
+  }
+
+  private async addNewer(): Promise<void> {
+    const newer: Sentence[] = [];
+    for (let page = 1; ; page += 1) {
+      const reply = await firstValueFrom(this.api.getSentences(page, PAGE_SIZE));
+      const known = new Set([...newer, ...this.sentenceList()].map((sentence) => sentence.id));
+      const unseen = reply.items.filter((sentence) => !known.has(sentence.id));
+      newer.push(...unseen);
+      this.totalCount.set(reply.total);
+      if (unseen.length < reply.items.length || reply.items.length < PAGE_SIZE) {
+        break;
+      }
+    }
+    this.sentenceList.update((sentences) => [...newer, ...sentences]);
   }
 
   private replace(sentence: Sentence): void {

@@ -1,0 +1,12 @@
+dialog {
+  border: 0;
+  color: var(--color-text);
+}
+
+dialog:not([open]) {
+  display: none;
+}
+
+h2 {
+  margin: 0;
+}
