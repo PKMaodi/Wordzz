@@ -13,3 +13,51 @@ h1 {
   margin: 6px 0 0;
   font-size: 14px;
 }
+
+.draft {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sentence {
+  margin: 0;
+  font-size: clamp(26px, 3.6vw, 38px);
+  line-height: 1.25;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+.placeholder {
+  color: var(--color-neutral-600);
+  font-style: italic;
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.count {
+  color: var(--color-neutral-700);
+  font-size: 13px;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
