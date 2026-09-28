@@ -1,15 +1,16 @@
 const { randomUUID } = require('node:crypto');
-const { validate, NIL } = require('uuid');
+const { validate, NIL, MAX } = require('uuid');
 
 class BaseEntity {
   static NIL_GUID = NIL;
+  static MAX_GUID = MAX;
 
   static parseId(value) {
     if (!validate(value)) {
       return null;
     }
     const id = value.toLowerCase();
-    return id === BaseEntity.NIL_GUID ? null : id;
+    return id === BaseEntity.NIL_GUID || id === BaseEntity.MAX_GUID ? null : id;
   }
 
   static resolveId(value) {

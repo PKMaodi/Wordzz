@@ -2,7 +2,7 @@ USE master;
 GO
 
 IF DB_ID(N'Wordzz') IS NULL
-  CREATE DATABASE Wordzz;
+  CREATE DATABASE Wordzz COLLATE SQL_Latin1_General_CP1_CI_AS;
 GO
 
 USE Wordzz;
@@ -26,7 +26,8 @@ IF OBJECT_ID(N'dbo.Sentences', N'U') IS NULL
     Id UNIQUEIDENTIFIER NOT NULL,
     CreatedAt DATETIME2(3) NOT NULL CONSTRAINT DF_Sentences_CreatedAt DEFAULT SYSUTCDATETIME(),
     UpdatedAt DATETIME2(3) NOT NULL CONSTRAINT DF_Sentences_UpdatedAt DEFAULT SYSUTCDATETIME(),
-    CONSTRAINT PK_Sentences PRIMARY KEY (Id)
+    CONSTRAINT PK_Sentences PRIMARY KEY NONCLUSTERED (Id),
+    INDEX IX_Sentences_CreatedAt CLUSTERED (CreatedAt)
   );
 GO
 
@@ -39,7 +40,8 @@ IF OBJECT_ID(N'dbo.SentenceWords', N'U') IS NULL
     CONSTRAINT PK_SentenceWords PRIMARY KEY (SentenceId, Position),
     CONSTRAINT FK_SentenceWords_Sentences FOREIGN KEY (SentenceId) REFERENCES dbo.Sentences (Id),
     CONSTRAINT FK_SentenceWords_Words FOREIGN KEY (WordId) REFERENCES dbo.Words (Id),
-    CONSTRAINT CK_SentenceWords_Position CHECK (Position >= 0)
+    CONSTRAINT CK_SentenceWords_Position CHECK (Position >= 0),
+    INDEX IX_SentenceWords_WordId NONCLUSTERED (WordId)
   );
 GO
 
@@ -63,15 +65,4 @@ WHERE NOT EXISTS (
   WHERE ExistingWord.Type = StarterWords.Type
     AND ExistingWord.Text = StarterWord.value
 );
-GO
-
-IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = N'wordzz_app' AND type = 'S')
-  THROW 50000, N'The SQL login wordzz_app was not found. Create it in SSMS under Security > Logins > New Login, then run this script again.', 1;
-
-IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'wordzz_app')
-  CREATE USER wordzz_app FOR LOGIN wordzz_app;
-
-GRANT SELECT ON dbo.Words TO wordzz_app;
-GRANT SELECT, INSERT, UPDATE ON dbo.Sentences TO wordzz_app;
-GRANT SELECT, INSERT, DELETE ON dbo.SentenceWords TO wordzz_app;
 GO
