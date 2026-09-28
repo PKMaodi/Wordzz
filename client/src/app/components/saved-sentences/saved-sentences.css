@@ -1,0 +1,10 @@
+section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 30px);
+}

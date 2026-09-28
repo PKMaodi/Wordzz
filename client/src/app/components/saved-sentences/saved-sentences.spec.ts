@@ -1,3 +1,4 @@
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SavedSentences } from './saved-sentences';
@@ -8,7 +9,8 @@ describe('SavedSentences', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SavedSentences]
+      imports: [SavedSentences],
+      providers: [provideZonelessChangeDetection()]
     })
     .compileComponents();
 

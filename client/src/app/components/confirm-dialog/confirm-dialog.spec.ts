@@ -1,3 +1,4 @@
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ConfirmDialog } from './confirm-dialog';
@@ -8,7 +9,8 @@ describe('ConfirmDialog', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ConfirmDialog]
+      imports: [ConfirmDialog],
+      providers: [provideZonelessChangeDetection()]
     })
     .compileComponents();
 
