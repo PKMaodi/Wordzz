@@ -84,6 +84,42 @@ li {
   margin-left: -5px;
 }
 
+.quiet {
+  color: var(--color-neutral-700);
+}
+
+.quiet:hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+
+.delete-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.delete-body p {
+  margin: 0;
+}
+
+.delete-text {
+  font-size: 18px;
+  font-style: italic;
+}
+
+.delete-error {
+  color: var(--color-accent-2-700);
+}
+
+.danger {
+  background: var(--color-accent-2-600);
+  color: var(--color-bg);
+}
+
+.danger:hover:not(:disabled) {
+  background: var(--color-accent-2-700);
+}
+
 .showing {
   margin: 6px 0 0;
   font-size: 13px;

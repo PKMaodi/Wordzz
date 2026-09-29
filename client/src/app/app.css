@@ -10,6 +10,26 @@
   letter-spacing: -0.02em;
 }
 
+.offline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  max-width: 1280px;
+  margin: 4px 0 32px;
+  padding: 0 clamp(16px, 4vw, var(--space-8));
+}
+
+.offline p {
+  max-width: 62ch;
+  margin: 0;
+  font-size: 15px;
+}
+
+.offline strong {
+  color: var(--color-accent-2-700);
+}
+
 main {
   display: flex;
   flex-wrap: wrap;

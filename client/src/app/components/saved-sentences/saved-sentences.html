@@ -45,6 +45,14 @@
             >
               Edit
             </button>
+            <button
+              type="button"
+              class="btn btn-ghost quiet"
+              [attr.aria-label]="'Delete: ' + item.text"
+              (click)="askToDelete(item)"
+            >
+              Delete
+            </button>
           </div>
         </li>
       }
@@ -63,3 +71,26 @@
     }
   }
 </section>
+
+<app-confirm-dialog
+  heading="Delete this sentence?"
+  [open]="toDelete() !== null"
+  [busy]="deleting()"
+  (dismiss)="closeDelete()"
+>
+  <div class="dialog-body delete-body">
+    <p class="delete-text">{{ toDelete()?.text }}</p>
+    <p>This can't be undone.</p>
+    @if (deleteError(); as message) {
+      <p class="delete-error" role="alert">{{ message }}</p>
+    }
+  </div>
+  <div class="dialog-actions">
+    <button type="button" class="btn btn-secondary" [disabled]="deleting()" (click)="closeDelete()">
+      Keep it
+    </button>
+    <button type="button" class="btn danger" [disabled]="deleting()" (click)="confirmDelete()">
+      {{ deleting() ? 'Deleting…' : 'Delete sentence' }}
+    </button>
+  </div>
+</app-confirm-dialog>

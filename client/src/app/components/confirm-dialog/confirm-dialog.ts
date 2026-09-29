@@ -24,6 +24,7 @@ export class ConfirmDialog {
       const dialog = this.dialog().nativeElement;
       if (this.open() && !dialog.open) {
         dialog.showModal();
+        dialog.querySelector<HTMLElement>('[data-initial-focus]')?.focus();
       } else if (!this.open() && dialog.open) {
         dialog.close();
       }
@@ -41,7 +42,7 @@ export class ConfirmDialog {
   }
 
   protected onClose(): void {
-    if (!this.open()) {
+    if (!this.open() || this.dialog().nativeElement.open) {
       return;
     }
     if (this.busy()) {
