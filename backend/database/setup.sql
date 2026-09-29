@@ -1,13 +1,3 @@
-USE master;
-GO
-
-IF DB_ID(N'Wordzz') IS NULL
-  CREATE DATABASE Wordzz COLLATE SQL_Latin1_General_CP1_CI_AS;
-GO
-
-USE Wordzz;
-GO
-
 IF OBJECT_ID(N'dbo.Words', N'U') IS NULL
   CREATE TABLE dbo.Words
   (

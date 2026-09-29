@@ -1,9 +1,10 @@
 const { readFile } = require('node:fs/promises');
 const path = require('node:path');
-const msnodesqlv8 = require('msnodesqlv8');
-const sql = require('mssql/msnodesqlv8');
 
-const SETUP_SCRIPT_PATH = path.join(__dirname, '..', '..', 'database', 'setup.sql');
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const sql = IS_PRODUCTION ? require('mssql') : require('mssql/msnodesqlv8');
+
+const DATABASE_FOLDER = path.join(__dirname, '..', '..', 'database');
 const BATCH_SEPARATOR = /^[ \t]*GO[ \t]*\r?$/im;
 
 function connectionStringValue(value) {
@@ -17,30 +18,53 @@ function connectionString(database) {
     `Database=${connectionStringValue(database)}`,
     'Trusted_Connection=yes',
     'Encrypt=yes',
-    `TrustServerCertificate=${process.env.NODE_ENV === 'production' ? 'no' : 'yes'}`
+    'TrustServerCertificate=yes'
   ].join(';');
 }
 
-const pool = new sql.ConnectionPool({
-  connectionString: connectionString(process.env.DB_NAME)
-});
+function connectionConfig(database) {
+  if (!IS_PRODUCTION) {
+    return { connectionString: connectionString(database) };
+  }
+
+  return {
+    server: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT || 1433),
+    database,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    options: {
+      encrypt: true,
+      trustServerCertificate: false
+    }
+  };
+}
+
+const pool = new sql.ConnectionPool(connectionConfig(process.env.DB_NAME));
 
 pool.on('error', (error) => {
   console.error(`Database error: ${error.message}`);
 });
 
-async function setUpDatabase() {
-  const script = await readFile(SETUP_SCRIPT_PATH, 'utf8');
+async function runScript(fileName, database) {
+  const script = await readFile(path.join(DATABASE_FOLDER, fileName), 'utf8');
   const batches = script.split(BATCH_SEPARATOR).map((batch) => batch.trim()).filter(Boolean);
-  const connection = await msnodesqlv8.promises.open(connectionString('master'));
+  const scriptPool = await new sql.ConnectionPool({ ...connectionConfig(database), pool: { max: 1 } }).connect();
 
   try {
     for (const batch of batches) {
-      await connection.promises.query(batch);
+      await scriptPool.request().batch(batch);
     }
   } finally {
-    await connection.promises.close();
+    await scriptPool.close();
   }
+}
+
+async function setUpDatabase() {
+  if (!IS_PRODUCTION) {
+    await runScript('create-database.sql', 'master');
+  }
+  await runScript('setup.sql', process.env.DB_NAME);
 }
 
 module.exports = { sql, pool, setUpDatabase };
