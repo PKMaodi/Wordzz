@@ -1,0 +1,30 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.intro {
+  margin: 0;
+}
+
+.input {
+  min-height: 44px;
+  font-size: 16px;
+}
+
+.help {
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+
+.errors {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-accent-2-700);
+  font-size: 14px;
+}
+
+.dialog-actions .btn {
+  min-height: 44px;
+}

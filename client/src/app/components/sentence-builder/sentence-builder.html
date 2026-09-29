@@ -158,7 +158,12 @@
     } @else if (wordStore.status() === 'error') {
       <p class="text-muted note">Words will appear here once Wordzz can reach its server.</p>
     } @else if (typeWords().length === 0) {
-      <p class="note">There are no {{ wordType() }} words yet.</p>
+      <div class="empty-type">
+        <p class="note">There are no {{ wordType() }} words yet.</p>
+        <button type="button" class="btn btn-ghost" (click)="addWordRequested.emit()">
+          Add a word
+        </button>
+      </div>
     } @else {
       <div class="choices" role="group" [attr.aria-label]="wordType() + ' words'">
         @for (word of typeWords(); track word.id) {

@@ -1,10 +1,12 @@
 require('dotenv').config({ quiet: true });
 
-const REQUIRED_SETTINGS = ['CLIENT_ORIGIN', 'DB_HOST', 'DB_NAME'];
+const REQUIRED_SETTINGS = process.env.NODE_ENV === 'production'
+  ? ['CLIENT_ORIGIN', 'DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD']
+  : ['CLIENT_ORIGIN', 'DB_HOST', 'DB_NAME'];
 
 const missingSettings = REQUIRED_SETTINGS.filter((name) => !process.env[name]);
 if (missingSettings.length > 0) {
-  console.error(`Missing settings in backend/.env: ${missingSettings.join(', ')}.`);
+  console.error(`Missing settings: ${missingSettings.join(', ')}. Add them to backend/.env on this computer.`);
   process.exit(1);
 }
 

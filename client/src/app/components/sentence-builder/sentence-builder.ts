@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, model, output } from '@angular/core';
 
 import { SENTENCE_MAX_WORDS, describeSentenceTimes, formatSentence } from '../../models/sentence';
 import { WORD_TYPES, WordType } from '../../models/word';
@@ -27,7 +27,8 @@ export class SentenceBuilder {
     return index === null ? '' : (this.draft.words()[index]?.text ?? '');
   });
   protected readonly wordTypes = WORD_TYPES;
-  protected readonly wordType = signal<WordType>('Noun');
+  readonly wordType = model<WordType>('Noun');
+  readonly addWordRequested = output<void>();
   protected readonly wordStore = inject(WordStore);
   protected readonly skeletonWidths = [64, 88, 56, 76, 96, 60];
   protected readonly typeWords = computed(() =>

@@ -133,6 +133,13 @@ h2 {
   font-size: 14px;
 }
 
+.empty-type {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
 .word {
   min-width: 44px;
   min-height: 44px;

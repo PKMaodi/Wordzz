@@ -1,11 +1,56 @@
 <header class="nav">
   <span class="nav-brand">Wordzz</span>
+  <button
+    type="button"
+    class="btn btn-secondary"
+    [disabled]="wordStore.status() !== 'ready'"
+    (click)="addingWord.set(true)"
+  >
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path
+        d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"
+      ></path>
+    </svg>
+    Add a word
+  </button>
 </header>
 
+@if (loadProblem(); as problem) {
+  <div class="offline" role="alert">
+    <p><strong>Your words and saved sentences can't load right now.</strong> {{ problem }}</p>
+    <button type="button" class="btn btn-primary" [disabled]="retrying()" (click)="retry()">
+      {{ retrying() ? 'Trying…' : 'Try again' }}
+    </button>
+  </div>
+}
+
 <main>
-  <app-sentence-builder />
+  <app-sentence-builder [(wordType)]="wordType" (addWordRequested)="addingWord.set(true)" />
   <app-saved-sentences />
 </main>
+
+<app-confirm-dialog
+  heading="Leave without saving?"
+  [open]="draft.leavePending()"
+  (dismiss)="draft.cancelLeave()"
+>
+  <div class="dialog-body">{{ leaveText() }}</div>
+  <div class="dialog-actions">
+    <button type="button" class="btn btn-secondary" (click)="draft.confirmLeave()">
+      Leave without saving
+    </button>
+    <button type="button" class="btn btn-primary" data-initial-focus (click)="draft.cancelLeave()">
+      Keep editing
+    </button>
+  </div>
+</app-confirm-dialog>
+
+<app-add-word-dialog
+  [open]="addingWord()"
+  [initialType]="wordType()"
+  (closed)="addingWord.set(false)"
+  (added)="wordAdded($event)"
+/>
 
 <div role="status">
   @if (toast.message(); as message) {

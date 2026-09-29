@@ -1,0 +1,55 @@
+<app-confirm-dialog
+  heading="Add a word"
+  dialogRole="dialog"
+  [open]="open()"
+  [busy]="adding()"
+  (dismiss)="closed.emit()"
+>
+  <form class="form" novalidate (submit)="submit($event)">
+    <p class="dialog-body intro">New words can be used in any sentence straight away.</p>
+    <div class="field">
+      <label for="add-text">Word</label>
+      <input
+        #textInput
+        id="add-text"
+        class="input"
+        autocomplete="off"
+        spellcheck="false"
+        maxlength="60"
+        aria-describedby="add-help add-errors"
+        data-initial-focus
+        [attr.aria-invalid]="shownErrors().length > 0"
+        [value]="text()"
+        (input)="text.set(textInput.value)"
+      />
+      <p id="add-help" class="text-muted help">
+        Letters only, up to 30. An apostrophe or hyphen can join letters, as in don't or well-known.
+      </p>
+    </div>
+    <div class="field">
+      <label for="add-type">Word type</label>
+      <select #typeSelect id="add-type" class="input" (change)="chooseType(typeSelect.value)">
+        @for (name of wordTypes; track name) {
+          <option [value]="name" [selected]="name === type()">{{ name }}</option>
+        }
+      </select>
+    </div>
+    <div id="add-errors" aria-live="polite">
+      @if (shownErrors().length > 0) {
+        <ul class="errors">
+          @for (error of shownErrors(); track $index) {
+            <li>{{ error }}</li>
+          }
+        </ul>
+      }
+    </div>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-secondary" [disabled]="adding()" (click)="closed.emit()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="adding()">
+        {{ adding() ? 'Adding…' : 'Add word' }}
+      </button>
+    </div>
+  </form>
+</app-confirm-dialog>

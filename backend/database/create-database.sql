@@ -1,0 +1,6 @@
+USE master;
+GO
+
+IF DB_ID(N'Wordzz') IS NULL
+  CREATE DATABASE Wordzz COLLATE SQL_Latin1_General_CP1_CI_AS;
+GO
