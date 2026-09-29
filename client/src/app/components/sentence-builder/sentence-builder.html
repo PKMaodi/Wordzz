@@ -1,15 +1,117 @@
 <section aria-labelledby="builder-title">
   <div>
-    <h1 id="builder-title">New sentence</h1>
-    <p class="text-muted intro">Choose a word type, then tap a word to add it.</p>
+    @if (draft.editing()) {
+      <h1 id="builder-title">Edit sentence</h1>
+      <p class="text-muted intro meta">{{ editMeta() }}</p>
+    } @else {
+      <h1 id="builder-title">New sentence</h1>
+      <p class="text-muted intro">Choose a word type, then tap a word to add it.</p>
+    }
   </div>
 
-  <div class="draft">
+  <div class="draft" [class.is-opening]="draft.opening()">
+    @if (draft.opening()) {
+      <p class="text-muted opening" role="status">Opening sentence…</p>
+    }
     <p class="sentence" [class.placeholder]="sentenceText() === ''" aria-live="polite">
       {{ sentenceText() || 'Your sentence will appear here.' }}
     </p>
+    @if (draft.words().length > 0) {
+      <div class="choices" role="group" aria-label="Words in your sentence. Select one to change it.">
+        @for (word of draft.words(); track $index) {
+          <button
+            type="button"
+            class="btn token"
+            [class.btn-primary]="$index === draft.selectedIndex()"
+            [class.btn-secondary]="$index !== draft.selectedIndex()"
+            [attr.aria-pressed]="$index === draft.selectedIndex()"
+            [attr.aria-label]="'Word ' + ($index + 1) + ', ' + word.text"
+            (click)="draft.select($index)"
+          >
+            {{ word.text }}
+          </button>
+        }
+      </div>
+    }
+    @if (draft.selectedIndex() !== null && !draft.opening()) {
+      <div class="selection" role="group" aria-label="Change the selected word">
+        <span class="selection-label">“{{ selectedWord() }}” selected:</span>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          aria-label="Move word left"
+          [disabled]="draft.selectedIndex() === 0"
+          (click)="draft.move(-1)"
+        >
+          <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+            <path
+              d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"
+            ></path>
+          </svg>
+          Move
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          aria-label="Move word right"
+          [disabled]="draft.selectedIndex() === draft.words().length - 1"
+          (click)="draft.move(1)"
+        >
+          Move
+          <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+            <path
+              d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"
+            ></path>
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="draft.mode() === 'replace'"
+          [class.btn-secondary]="draft.mode() !== 'replace'"
+          [attr.aria-pressed]="draft.mode() === 'replace'"
+          (click)="draft.toggleReplace()"
+        >
+          Replace
+        </button>
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="draft.mode() === 'before'"
+          [class.btn-secondary]="draft.mode() !== 'before'"
+          [attr.aria-pressed]="draft.mode() === 'before'"
+          [disabled]="draft.isFull()"
+          (click)="draft.toggleAddBefore()"
+        >
+          Add before
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="draft.removeSelected()">Remove</button>
+        <button type="button" class="btn btn-ghost" (click)="draft.clearSelection()">Done</button>
+      </div>
+    }
     <div class="tools">
       <span class="count">{{ draft.words().length }} of {{ maxWords }} words</span>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="!draft.canUndo() || draft.busy()"
+        (click)="draft.undo()"
+      >
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+          <path
+            d="M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z"
+          ></path>
+        </svg>
+        Undo
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="draft.words().length === 0 || draft.busy()"
+        (click)="draft.clear()"
+      >
+        Clear all
+      </button>
     </div>
   </div>
 
@@ -23,11 +125,91 @@
           [class.btn-primary]="type === wordType()"
           [class.btn-secondary]="type !== wordType()"
           [attr.aria-pressed]="type === wordType()"
+          [disabled]="wordStore.status() !== 'ready'"
           (click)="wordType.set(type)"
         >
           {{ type }}
         </button>
       }
     </div>
+  </div>
+
+  <div class="block">
+    <div class="block-head">
+      <h2>{{ wordType() }} words</h2>
+      <p
+        class="mode"
+        [class.limit]="draft.isFull() && draft.mode() === 'end'"
+        [class.targeting]="draft.mode() !== 'end'"
+        aria-live="polite"
+      >
+        {{ modeText() }}
+      </p>
+    </div>
+    @if (wordStore.status() === 'loading') {
+      <div class="loading" role="status">
+        <span class="text-muted">Loading words…</span>
+        <div class="choices" aria-hidden="true">
+          @for (width of skeletonWidths; track $index) {
+            <div class="skeleton" [style.width.px]="width"></div>
+          }
+        </div>
+      </div>
+    } @else if (wordStore.status() === 'error') {
+      <p class="text-muted note">Words will appear here once Wordzz can reach its server.</p>
+    } @else if (typeWords().length === 0) {
+      <p class="note">There are no {{ wordType() }} words yet.</p>
+    } @else {
+      <div class="choices" role="group" [attr.aria-label]="wordType() + ' words'">
+        @for (word of typeWords(); track word.id) {
+          <button
+            type="button"
+            class="btn btn-secondary word"
+            [disabled]="wordsLocked()"
+            [attr.aria-label]="(draft.mode() === 'replace' ? 'Replace with ' : 'Add ') + word.text"
+            (click)="draft.addWord(word)"
+          >
+            {{ word.text }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="save">
+    <div class="save-row">
+      <button type="button" class="btn btn-primary save-button" [disabled]="saveDisabled()" (click)="save()">
+        {{ saveLabel() }}
+      </button>
+      @if (draft.editing()) {
+        <button
+          type="button"
+          class="btn btn-secondary cancel"
+          [disabled]="draft.saving()"
+          (click)="cancelEdit()"
+        >
+          Cancel
+        </button>
+      }
+      @if (draft.words().length === 0 && !draft.opening()) {
+        <span class="hint">Add at least one word to save.</span>
+      }
+    </div>
+    @if (draft.saveError(); as error) {
+      <div class="save-error" role="alert">
+        <p>
+          <strong>The sentence couldn't be saved.</strong>
+          {{ error.message }} Your words are still here.
+        </p>
+        @if (error.errors.length > 0) {
+          <ul>
+            @for (detail of error.errors; track $index) {
+              <li>{{ detail }}</li>
+            }
+          </ul>
+        }
+        <button type="button" class="btn btn-secondary" (click)="save()">Try again</button>
+      </div>
+    }
   </div>
 </section>

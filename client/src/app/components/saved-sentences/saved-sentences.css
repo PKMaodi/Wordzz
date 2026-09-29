@@ -8,3 +8,97 @@ h2 {
   margin: 0;
   font-size: clamp(24px, 3vw, 30px);
 }
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  font-size: 14px;
+}
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton div {
+  height: 18px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.skeleton div + div {
+  width: 40%;
+  height: 12px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 40ch;
+}
+
+.lead {
+  margin: 0;
+  font-size: 20px;
+}
+
+.note {
+  margin: 0;
+  font-size: 14px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.text {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.35;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+.times {
+  color: var(--color-neutral-700);
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+  margin-left: -5px;
+}
+
+.showing {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
+.tag {
+  align-self: flex-start;
+  margin-bottom: 4px;
+}
+
+.more {
+  align-self: flex-start;
+  min-height: 44px;
+}
+
+.end {
+  font-size: 13px;
+}

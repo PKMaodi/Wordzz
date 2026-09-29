@@ -1,0 +1,11 @@
+<dialog
+  #dialog
+  class="dialog"
+  [attr.role]="dialogRole()"
+  [attr.aria-labelledby]="titleId"
+  (cancel)="onCancel($event)"
+  (close)="onClose()"
+>
+  <h2 class="dialog-title" [id]="titleId">{{ heading() }}</h2>
+  <ng-content />
+</dialog>
